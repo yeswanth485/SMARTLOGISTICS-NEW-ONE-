@@ -17,6 +17,16 @@ async def init_db() -> None:
         from app.models import order, product, packing_result  # noqa: F401
         from app.models import shipment_option, shipment_analysis, box_catalog, tool  # noqa: F401
 
+        logger.info("Checking for outdated schema conflicts...")
+        try:
+            res = await conn.execute(text("SELECT data_type FROM information_schema.columns WHERE table_name = 'orders' AND column_name = 'id'"))
+            col_type = res.scalar()
+            if col_type and 'int' in col_type.lower():
+                logger.warning("Old integer schema detected in Render Postgres! Dropping tables to rebuild with UUIDs...")
+                await conn.run_sync(Base.metadata.drop_all)
+        except Exception as e:
+            logger.warning(f"Schema check exception (safe to ignore): {e}")
+
         logger.info("Creating database tables...")
         await conn.run_sync(Base.metadata.create_all)
         logger.info("Tables created successfully.")
