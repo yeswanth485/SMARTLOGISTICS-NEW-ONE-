@@ -1,0 +1,25 @@
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+venv/
+env/
+.pytest_cache/
+
+# Docker
+.docker/
+
+# Mac/Windows
+.DS_Store
+Thumbs.db
