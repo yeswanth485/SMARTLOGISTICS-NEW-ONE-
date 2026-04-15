@@ -22,10 +22,12 @@ async def init_db() -> None:
             res = await conn.execute(text("SELECT data_type FROM information_schema.columns WHERE table_name = 'orders' AND column_name = 'id'"))
             col_type = res.scalar()
             if col_type and 'int' in col_type.lower():
-                logger.warning("Old integer schema detected in Render Postgres! Dropping tables to rebuild with UUIDs...")
-                await conn.run_sync(Base.metadata.drop_all)
+                logger.warning("Old integer schema detected! Wiping the entire database schema to reset cleanly...")
+                await conn.execute(text("DROP SCHEMA public CASCADE"))
+                await conn.execute(text("CREATE SCHEMA public"))
+                logger.info("Database wiped cleanly.")
         except Exception as e:
-            logger.warning(f"Schema check exception (safe to ignore): {e}")
+            logger.warning(f"Schema check exception: {e}")
 
         logger.info("Creating database tables...")
         await conn.run_sync(Base.metadata.create_all)
