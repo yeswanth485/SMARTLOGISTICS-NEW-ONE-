@@ -58,8 +58,9 @@ async def run_optimization_pipeline(db: AsyncSession, product_inputs: List[Produ
     ]
     max_box_weight = max(b["max_weight"] for b in box_catalog)
     
-    if total_actual_weight > max_box_weight * 1.2:  # 20% buffer
-        raise ValueError(f"Total weight {total_actual_weight:.1f}kg exceeds largest box capacity {max_box_weight}kg")
+    # Optional: Log heavy orders instead of crashing them
+    if total_actual_weight > max_box_weight:
+        logger.info(f"Heavy order detected: {total_actual_weight}kg. Falling back to largest available box capacity routing.")
     
     # Capped expand: max 200 items to prevent mem/GA explosion
     items: List[Item] = capped_expand_products(products_dicts, max_items=200)
